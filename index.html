@@ -1,0 +1,35 @@
+<html>
+	<head>
+	</head>
+	<body>
+        <div>Records</div>
+        <div>Channel Subscription Status: <span id="statusLabel"></span></div>
+        <button id="add">Add Record</button>
+		<ul id="list"></ul>
+		<script type="module">
+			import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+			const supabase = createClient('http://localhost:54321', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24ifQ.625_WdcF3KHqz5amU0x2X5WWHP-OEs_4qj0ssLNHzTs')
+
+			supabase
+    			.channel('public:example')
+			    .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'example' },
+                    (payload) => {
+                        console.log('items', payload);
+                        const pre = document.createElement('pre');
+                        pre.innerHTML = JSON.stringify(payload, null, 4);
+                        list.appendChild(pre);
+                    }
+                )
+			    .subscribe((status) => {
+                    statusLabel.innerHTML = status;
+                });
+
+            add.addEventListener('click', async () => {
+                await supabase.functions.invoke('example');
+            });
+
+		  </script>
+	</body>
+</html>
