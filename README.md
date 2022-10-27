@@ -29,4 +29,4 @@ Once finished the "app" should be available on http://localhost:3000
 
 ### Logs
 
-The realtime docker logs can be viewed using `npm run logs`
+The realtime docker logs can be viewed using `npm run realtime:logs`
