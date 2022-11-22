@@ -2,32 +2,65 @@
 	<head>
 	</head>
 	<body>
-        <div>Records</div>
+        <div>Chat Time</div>
         <div>Channel Subscription Status: <span id="statusLabel"></span></div>
-        <button id="add">Add Record</button>
-		<ul id="list"></ul>
-		<script type="module">
-			import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.4/+esm'
-			const supabase = createClient('http://localhost:54321', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24ifQ.625_WdcF3KHqz5amU0x2X5WWHP-OEs_4qj0ssLNHzTs')
+        <div>
+            <input id="playerName"/>
+            <button id="add">Join Room</button>
+            <div id="error"></div>
+        </div>
 
-			supabase
-    			.channel('public:example')
-			    .on(
-                    'postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'example' },
-                    (payload) => {
-                        console.log('items', payload);
-                        const pre = document.createElement('pre');
-                        pre.innerHTML = JSON.stringify(payload, null, 4);
-                        list.appendChild(pre);
-                    }
-                )
-			    .subscribe((status) => {
-                    statusLabel.innerHTML = status;
-                });
+		<ul style="height: 400px; overflow: scroll;" id="room">
+
+        </div>
+		<script type="module">
+			import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.1.0/+esm';
+			const supabase = createClient('http://localhost:54321', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0');
+
+            let playerNameValue = '';
+            playerName.addEventListener('keyup', (event) => {
+                playerNameValue = event.target.value;
+                if (playerNameValue) {
+                    error.innerHTML = '';
+                }
+            });
 
             add.addEventListener('click', async () => {
-                await supabase.functions.invoke('example');
+                if (!playerNameValue) {
+                    error.innerHTML = 'please enter name';
+                } else {
+                    // create presence channel for chat room 1
+                    const channel = supabase.channel('room-1', {
+                        config: {
+                            presence: { key: playerNameValue }
+                        }
+                    });
+
+                    add.disabled = true;
+
+                    // register to the leave event and update the "chat"
+                    channel.on('presence', { event: 'leave' }, (event) => {
+                            const chat = document.createElement('li');
+                            chat.innerHTML = `${playerNameValue} Left`;
+                            room.appendChild(chat);
+					});
+
+                    // register to the join event and update the "chat"
+                    channel.on('presence', { event: 'join' }, (event) => {
+                        const chat = document.createElement('li');
+                        chat.innerHTML = `${playerNameValue} Joined`;
+                        room.appendChild(chat);
+                    });
+
+                   // subscribe to room-1 and track when subscribed
+                    channel.subscribe(async (status) => {
+                        statusLabel.innerHTML = status;
+                        console.log(status);
+                        if (status === 'SUBSCRIBED') {
+                            const trackStatus = await channel.track({});
+                        }
+                    });
+                }
             });
 
 		  </script>

@@ -1,31 +1,22 @@
 # Supabase Realtime Issue Repro
 
-A repo designed to demonstrate a realtime issue running locally with the latest supabase CLI (1.11.2) that uses version 0.25.1 of the supabase:realtime docker image. The same code works using a previous version or the CLI (1.8.7) which uses an older version of the supabase:realtime docker image (0.22.7).
+A repo designed to demonstrate a realtime issue running locally with the latest supabase CLI (1.15.0) that uses leverages the latest release candidate of the supabase realtime image. This image supports presence and broadcast, however the presence functionality is not working, a channel error is being received after the presence channel has been subscribed meaning that the example constantly receives join and leave events.
 
-This example sets up a table with replication configured, an edge function that inserts data into the table and the client that subscribes to all updates on the table.
+This example is a simple web page where two users can join a room and their presence is indicated
 
 ### Pre-requisites:
 
 Docker installed and started and dependencies installed via `npm install`
 
-### Running Working Version
+### Running
 
 ```sh
-npm run install:old:supabase
+npm run install
 npm start
 ```
 
 Once finished the "app" should be available on http://localhost:3000
 
-
-### Running Broken Version
-
-```sh
-npm run install:new:supabase
-npm start
-```
-
-Once finished the "app" should be available on http://localhost:3000
 
 ### Logs
 
